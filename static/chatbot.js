@@ -41,8 +41,10 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       const data = await res.json();
       const reply = data.reply ?? 'Sorry, something went wrong.';
+      const { reply } = await res.json();
+      const hasHTML = /<[^>]+>/.test(reply);
       // show reply; we keep \n and let CSS (white-space: pre-line) render them
-      appendMessage('bot', reply, true);
+      appendMessage('bot', reply, !hasHTML);
     } catch {
       appendMessage('bot', 'Sorry, something went wrong.');
     }
@@ -75,3 +77,4 @@ document.addEventListener('DOMContentLoaded', () => {
     })();
   }
 });
+
