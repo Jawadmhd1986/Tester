@@ -2,79 +2,149 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>DSV Quotation Generator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DSV Chatbot</title>
+  <style>
+    :root{
+      --bg: #0b2a48;       /* deep blue (like your screenshot) */
+      --bot: #ffffff;      /* bot bubble background */
+      --user: #1e6bd6;     /* user bubble background */
+      --text: #0d1b2a;     /* dark text inside bot bubble */
+      --muted: #93a4b7;
+      --radius: 14px;
+      --maxw: 820px;
+    }
 
-  <!-- Main stylesheet -->
-  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
+    * { box-sizing: border-box; }
+
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Color Emoji", "Apple Color Emoji", sans-serif;
+      background: var(--bg);
+      color:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      min-height:100vh;
+      padding: 16px;
+    }
+
+    .chat-app{
+      width:100%;
+      max-width: var(--maxw);
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+
+    .chat-window{
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 16px;
+      padding: 14px;
+      height: 62vh;
+      overflow:auto;
+    }
+
+    /* message row */
+    .message{
+      display:flex;
+      margin: 8px 0;
+    }
+    .message.user{ justify-content: flex-end; }
+    .message.bot { justify-content: flex-start; }
+
+    /* bubble */
+    .message-text{
+      max-width: 78%;
+      padding: 12px 14px;
+      border-radius: var(--radius);
+      line-height: 1.4;
+      word-break: break-word; /* avoid overflow on long words/URLs/emojis */
+    }
+
+    /* user bubble style */
+    .message.user .message-text{
+      background: var(--user);
+      color: #fff;
+      border-top-right-radius: 4px;
+      box-shadow: 0 1px 0 rgba(0,0,0,.2) inset;
+    }
+
+    /* bot bubble style */
+    .message.bot .message-text{
+      background: var(--bot);
+      color: var(--text);
+      border-top-left-radius: 4px;
+      box-shadow: 0 1px 0 rgba(0,0,0,.07) inset;
+      /* 👇 THE IMPORTANT BIT: keep \n as visual line breaks like your 2nd image */
+      white-space: pre-line !important;
+    }
+
+    /* composer */
+    .composer{
+      display:flex;
+      gap:10px;
+    }
+    .composer input[type="text"]{
+      flex:1;
+      padding: 12px 14px;
+      border-radius: 999px;
+      border: none;
+      outline: none;
+    }
+    .composer button{
+      padding: 12px 18px;
+      border-radius: 999px;
+      border:none;
+      cursor:pointer;
+      background:#ffffff;
+      color:#0b2a48;
+      font-weight:600;
+    }
+    .composer button[disabled]{ opacity:.6; cursor:not-allowed; }
+
+    /* tiny header to match vibe */
+    .header{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      color:#e9f0f8;
+      font-weight:600;
+      letter-spacing:.2px;
+      margin-bottom: 4px;
+    }
+    .header .dot{
+      width:10px;height:10px;border-radius:50%;background:#5bd0ff;display:inline-block;
+      box-shadow: 0 0 12px #5bd0ff80;
+    }
+
+    /* scrollbar (nice on dark bg) */
+    .chat-window::-webkit-scrollbar{ width:12px; }
+    .chat-window::-webkit-scrollbar-thumb{ background:#2f4f6d; border-radius:12px; }
+    .chat-window::-webkit-scrollbar-track{ background:transparent; }
+  </style>
 </head>
 <body>
+  <div class="chat-app">
+    <div class="header"><span class="dot"></span> DSV Chat</div>
 
-  <div class="quote-section">
-    <!-- Floating DSV logo -->
-    <img src="{{ url_for('static', filename='dsv_logo.png') }}"
-         alt="DSV Logo"
-         class="dsv-logo" />
-
-    <!-- White card container -->
-    <div class="quote-card">
-      <h1>Quotation Generator</h1>
-      <form action="{{ url_for('generate') }}" method="post">
-        <label for="storage">Storage Type</label>
-        <select id="storage" name="storage_type" required>
-          <option value="">— Select —</option>
-          <option>AC</option>
-          <option>Non-AC</option>
-          <option>Open Shed</option>
-          <option>Chemicals AC</option>
-          <option>Chemicals Non-AC</option>
-          <option>Open Yard – KIZAD</option>
-          <option>Open Yard – Mussafah</option>
-        </select>
-
-        <label for="volume">Volume (CBM or SQM)</label>
-        <input type="number" step="0.01" id="volume" name="volume" required />
-
-        <label for="days">Duration (Days)</label>
-        <input type="number" id="days" name="days" required />
-
-        <label for="wms">Include WMS?</label>
-        <select id="wms" name="wms" required>
-          <option>Yes</option>
-          <option>No</option>
-        </select>
-
-        <label for="commodity">Commodity</label>
-        <input type="text" id="commodity" name="commodity" placeholder="e.g., Furniture / Machinery" required>
-
-
-        <button type="submit" class="btn-generate">
-          Generate
-        </button>
-      </form>
-    </div>
-
-    <!-- Chat toggle button -->
-    <button class="chat-toggle">
-      <img src="{{ url_for('static', filename='chat-icon.png') }}"
-           alt="Chat with DSV" />
-    </button>
-
-    <!-- Chat widget -->
-    <div class="chat-box" id="chat-box">
-      <div class="chat-header">
-        <span>DSV Assistant</span>
-        <button id="chat-close">&times;</button>
-      </div>
-      <div class="chat-messages" id="chat-messages"></div>
-      <div class="chat-footer">
-        <input id="chat-input" type="text" placeholder="Type your message…" />
-        <button id="chat-send">Send</button>
+    <div class="chat-window" id="chat">
+      <!-- Example opening message -->
+      <div class="message bot">
+        <div class="message-text">
+Welcome! Ask me about DSV storage, VAS, fleet, routes, and more.
+Type "fleet" to see the line-break formatting demo.
+        </div>
       </div>
     </div>
+
+    <form class="composer" id="composer" autocomplete="off">
+      <input id="prompt" type="text" placeholder="Type your message…" />
+      <button id="send" type="submit">Send</button>
+    </form>
   </div>
 
-  <!-- Chat logic -->
-  <script src="{{ url_for('static', filename='chatbot.js') }}"></script>
+  <script src="chatbot.js"></script>
 </body>
 </html>
