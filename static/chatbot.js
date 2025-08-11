@@ -1,4 +1,4 @@
-// 🔧 Fix for mobile viewport height (ensures chat icon appears on load)
+// Fix for mobile viewport height
 window.addEventListener('load', () => {
   let vh = window.innerHeight * 0.01;
   document.documentElement.style.setProperty('--vh', `${vh}px`);
@@ -8,7 +8,7 @@ window.addEventListener('resize', () => {
   document.documentElement.style.setProperty('--vh', `${vh}px`);
 });
 
-// 🧠 Main chatbot logic
+// Main chatbot logic
 document.addEventListener('DOMContentLoaded', () => {
   const chatBox    = document.getElementById('chat-box');
   const chatToggle = document.querySelector('.chat-toggle');
@@ -39,14 +39,16 @@ document.addEventListener('DOMContentLoaded', () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: text })
       });
-      const { reply } = await res.json();
-      const hasHTML = /<[^>]+>/.test(reply);
-      appendMessage('bot', reply, !hasHTML);
+      const data = await res.json();
+      const reply = data.reply ?? 'Sorry, something went wrong.';
+      // show reply; we keep \n and let CSS (white-space: pre-line) render them
+      appendMessage('bot', reply, true);
     } catch {
       appendMessage('bot', 'Sorry, something went wrong.');
     }
   }
 
+  // typewriter = true uses a safe textContent typewriter (preserves \n)
   function appendMessage(sender, text, typewriter = false) {
     const wrapper = document.createElement('div');
     wrapper.className = `message ${sender}`;
@@ -57,16 +59,19 @@ document.addEventListener('DOMContentLoaded', () => {
     msgsEl.scrollTop = msgsEl.scrollHeight;
 
     if (!typewriter) {
-      bubble.innerHTML = text;
-    } else {
-      let i = 0;
-      (function typeChar() {
-        if (i < text.length) {
-          bubble.innerHTML += text.charAt(i++);
-          msgsEl.scrollTop = msgsEl.scrollHeight;
-          setTimeout(typeChar, 15);
-        }
-      })();
+      bubble.textContent = text; // ✅ preserve \n
+      return;
     }
+
+    // Safe typewriter with \n preservation
+    let i = 0;
+    (function typeChar() {
+      if (i <= text.length) {
+        bubble.textContent = text.slice(0, i); // ✅ preserve \n
+        msgsEl.scrollTop = msgsEl.scrollHeight;
+        i++;
+        setTimeout(typeChar, 15);
+      }
+    })();
   }
 });
