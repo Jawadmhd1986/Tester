@@ -443,6 +443,21 @@ body {
 .chat-footer button:hover {
   background: var(--blue-dsv-light);
 }
+/* --- Preserve bot line breaks and keep long words/emojis from overflowing --- */
+.message.bot .message-text,
+.chat-bubble.bot .message-text,
+.bot-message .message-text,
+.message.bot,
+.chat-bubble.bot {
+  white-space: pre-line;    /* turns \n into real line breaks */
+  word-break: break-word;   /* avoid overflow on long words/URLs/emojis */
+  line-height: 1.4;
+}
+
+/* optional: nicer spacing for lists that start with "-" */
+.message.bot .message-text {
+  margin-top: 2px;
+}
 
 /* Mobile tweaks */
 @media (max-width: 480px) {
@@ -471,6 +486,7 @@ body {
     z-index: 2000;
   }
 }
+
 
 
 
