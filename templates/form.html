@@ -73,7 +73,11 @@
       </div>
     </div>
   </div>
-<div class="chat-window">
+
+
+  <!-- Chat logic -->
+  <script src="{{ url_for('static', filename='chatbot.js') }}"></script>
+  <div class="chat-window">
   <!-- messages get appended here by JS -->
   <!-- example bot bubble -->
   <div class="message bot">
@@ -89,9 +93,7 @@
 Fleet vehicles support all types of transport including full truckload (FTL), LTL, and container movements.</div>
   </div>
 </div>
-
-  <!-- Chat logic -->
-  <script src="{{ url_for('static', filename='chatbot.js') }}"></script>
 </body>
 </html>
+
 
