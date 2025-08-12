@@ -1057,28 +1057,34 @@ def chat():
             "We handle 2PL, 3PL, 4PL logistics, WMS, VAS, and temperature-controlled storage. Contact +971 2 555 2900 or visit dsv.com."
         })
 # --- General Logistics Overview ---
-    if match([
-    r"\blogistics\b",
-    r"what.*is.*logistics",
-    r"about logistics",
-    r"logistics info",
-    r"tell me about logistics",
-    r"explain logistics",
-    r"what do you know about logistics",
-    r"logistics overview",
-    r"define logistics",
-    r"logistics meaning"
-]):
-        return jsonify({"reply":
-        "**Logistics** refers to the planning, execution, and management of the movement and storage of goods, services, and information from origin to destination.\n\n"
-        "At **DSV Abu Dhabi**, logistics includes:\n"
-        "- 📦 **Warehousing** – AC, Non-AC, Open Yard, and temperature-controlled facilities\n"
-        "- 🚛 **Transportation** – Local & GCC trucking (flatbeds, reefers, lowbeds, box trucks, double trailers, etc.)\n"
-        "- 🧾 **Value Added Services** – Packing, labeling, inventory counts, kitting & assembly\n"
-        "- 🌍 **Global Freight Forwarding** – Air, sea, and multimodal shipments\n"
-        "- 🧠 **4PL & Supply Chain Solutions** – End-to-end management, optimization, and consulting\n\n"
-        "We manage everything from port-to-door, ensuring safety, compliance, and cost efficiency."
-    })
+    if (
+        match([
+        r"\blogistics\b",
+        r"what.*is.*logistics",
+        r"about logistics",
+        r"logistics info",
+        r"tell me about logistics",
+        r"explain logistics",
+        r"what do you know about logistics",
+        r"logistics overview",
+        r"define logistics",
+        r"logistics meaning"
+    ])
+    # don't trigger if user is asking about 1PL/2PL/3PL/3.5PL/4PL/5PL/6PL
+        and not re.search(
+        r"\b(1|2|3|3\.5|4|5|6)pl\b|\b(first|second|third|fourth|fifth|sixth)\s+party\s+logistics\b",
+        message
+    )
+):
+        return jsonify({"reply": """**Logistics** refers to the planning, execution, and management of the movement and storage of goods, services, and information from origin to destination.
+At **DSV Abu Dhabi**, logistics includes:
+- 📦 **Warehousing** – AC, Non-AC, Open Yard, and temperature-controlled facilities
+- 🚛 **Transportation** – Local & GCC trucking (flatbeds, reefers, lowbeds, box trucks, double trailers, etc.)
+- 🧾 **Value Added Services** – Packing, labeling, inventory counts, kitting & assembly
+- 🌍 **Global Freight Forwarding** – Air, sea, and multimodal shipments
+- 🧠 **4PL & Supply Chain Solutions** – End-to-end management, optimization, and consulting
+We manage everything from port-to-door, ensuring safety, compliance, and cost efficiency."""})
+
 
     # --- DSV Vision / Mission ---
     if match([
