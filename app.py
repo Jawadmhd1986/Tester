@@ -1373,21 +1373,21 @@ _PL_DEF = {
     },
 }
 
-    def _short_contrast(pls):
+        def _short_contrast(pls):
     """One-line contrast for just the requested models."""
         order = ["1PL","2PL","3PL","3.5PL","4PL","5PL","6PL"]
         rank = {k:i for i,k in enumerate(order)}
         pls_sorted = sorted(pls, key=lambda k: rank.get(k, 99))
         parts = []
-        for k in pls_sorted:
-            if k == "1PL": parts.append("client in-house")
-            elif k == "2PL": parts.append("provider assets only")
-            elif k == "3PL": parts.append("provider runs execution")
-            elif k == "3.5PL": parts.append("exec + some strategy")
-            elif k == "4PL": parts.append("lead-logistics orchestration")
-            elif k == "5PL": parts.append("platform multi-network")
-            elif k == "6PL": parts.append("autonomous/AI orchestration")
-        return " → ".join(parts)
+            for k in pls_sorted:
+                if k == "1PL": parts.append("client in-house")
+                elif k == "2PL": parts.append("provider assets only")
+                elif k == "3PL": parts.append("provider runs execution")
+                elif k == "3.5PL": parts.append("exec + some strategy")
+                elif k == "4PL": parts.append("lead-logistics orchestration")
+                elif k == "5PL": parts.append("platform multi-network")
+                elif k == "6PL": parts.append("autonomous/AI orchestration")
+            return " → ".join(parts)
 
 # Trigger only when user is comparing PLs AND mentions at least two
     if (
