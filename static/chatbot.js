@@ -113,23 +113,47 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Append message bubble
   function appendMessage(sender, text, typewriter = false) {
-    const wrapper = document.createElement('div');
-    wrapper.className = `message ${sender}`;
-    const bubble = document.createElement('div');
-    bubble.className = 'bubble';
-    wrapper.appendChild(bubble);
-    msgsEl.appendChild(wrapper);
-    msgsEl.scrollTop = msgsEl.scrollHeight;
+  const wrapper = document.createElement('div');
+  wrapper.className = `message ${sender}`;
+  const bubble = document.createElement('div');
+  bubble.className = 'bubble';
+  wrapper.appendChild(bubble);
+  msgsEl.appendChild(wrapper);
+  msgsEl.scrollTop = msgsEl.scrollHeight;
 
-    if (sender === 'bot' && typewriter) {
-      const safeHTML = renderWithLinksAndBreaks(text);
-      // start blank and type it out
-      bubble.innerHTML = '';
-      typeHTML(safeHTML, bubble, 15);
-      return;
-    }
+  // If it's a bot message that includes an <a href=...>, allow ONLY <a> tags
+  const hasAnchor = sender === 'bot' && /<a\s+href=/i.test(text);
 
-    // user or non-typewriter bot
-    bubble.textContent = text; // preserves \n for user; CSS handles it
+  if (hasAnchor) {
+    bubble.innerHTML = sanitizeLinkOnly(text);
+    return; // skip typewriter for HTML messages
   }
-});
+
+  if (!typewriter) {
+    bubble.textContent = text; // preserves \n with CSS pre-line
+    return;
+  }
+
+  // Typewriter for plain text
+  let i = 0;
+  (function typeChar() {
+    if (i <= text.length) {
+      bubble.textContent = text.slice(0, i);
+      msgsEl.scrollTop = msgsEl.scrollHeight;
+      i++;
+      setTimeout(typeChar, 15);
+    }
+  })();
+}
+
+// very small sanitizer: keep <a ...>…</a>, drop other tags, keep \n as <br>
+function sanitizeLinkOnly(html) {
+  // remove all tags except <a>
+  const withoutOtherTags = html.replace(/<(?!\/?a(\s|>))/gi, '&lt;')
+                               .replace(/\n/g, '<br>');
+  // additionally, ensure rel & target are present for safety
+  return withoutOtherTags.replace(
+    /<a\s+href="([^"]+)"([^>]*)>/gi,
+    (m, href) => `<a href="${href}" target="_blank" rel="noopener noreferrer">`
+  );
+}
