@@ -1103,7 +1103,7 @@ We manage everything from port-to-door, ensuring safety, compliance, and cost ef
             "Visit dsv.com to learn more about our global goals and ESG initiatives."
         })
 
-    if not re.search(r"(wms|warehouse management|abu dhabi|fleet|transport|vision|mission|location|address|site)", message) and match([
+    if not re.search(r"(wms|warehouse management|abu dhabi|fleet|transport|vision|mission|location|address|site|service)", message) and match([
         r"\bdsv\b", r"about dsv", r"who is dsv", r"what is dsv",
         r"dsv info", r"tell me about dsv", r"dsv overview",
         r"dsv abbreviation", r"dsv stands for", r"what does dsv mean"
