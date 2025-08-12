@@ -1405,7 +1405,7 @@ if (
             lines.append(f"- {b}")
         lines.append("")  # blank line
     lines.append(f"**In short:** {_short_contrast(asked)}.")
-    return jsonify({"reply": "\n".join(lines)})
+        return jsonify({"reply": "\n".join(lines)})
 
     # --- Service definitions ---
     if match([r"\bwhat is 2pl\b", r"\b2pl\b", r"second party logistics", r"2pl meaning"]):
