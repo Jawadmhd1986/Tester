@@ -41,30 +41,77 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       const data = await res.json();
       const reply = data.reply ?? 'Sorry, something went wrong.';
-      // show reply with links + line breaks
-      appendMessage('bot', reply, true);
+      appendMessage('bot', reply, true); // typewriter with links
     } catch {
       appendMessage('bot', 'Sorry, something went wrong.');
     }
   }
 
-  // --- sanitizer: escape all HTML, then allow only <a ...>...</a>, and convert \n to <br> ---
+  // --- sanitizer: escape everything, then allow only <a> tags; turn \n into <br> ---
   function renderWithLinksAndBreaks(text) {
-    // 1) escape
     let out = String(text)
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;');
-    // 2) allow anchor tags back
     out = out
       .replace(/&lt;a\b([\s\S]*?)&gt;/gi, '<a$1>')
       .replace(/&lt;\/a&gt;/gi, '</a>');
-    // 3) turn newlines into <br>
     out = out.replace(/\n/g, '<br>');
     return out;
   }
 
-  // typewriter=true now means: render safely with links + <br> (no visual typing)
+  // --- HTML-safe typewriter: types text chars, injects tags instantly (so links stay intact) ---
+  function typeHTML(html, el, speed = 15) {
+    const parts = html.split(/(<[^>]+>)/g).filter(Boolean); // tags/text
+    let pIndex = 0, cIndex = 0;
+
+    function step() {
+      if (pIndex >= parts.length) return;
+
+      const part = parts[pIndex];
+
+      if (part.startsWith('<')) {
+        // append full tag immediately
+        el.innerHTML += part;
+        pIndex++;
+        cIndex = 0;
+        // keep scrolling
+        msgsEl.scrollTop = msgsEl.scrollHeight;
+        setTimeout(step, speed);
+      } else {
+        // type text content character-by-character
+        if (cIndex <= part.length) {
+          // build current typed HTML: existing + current text slice
+          const typed = part.slice(0, cIndex);
+          // replace last text chunk only by rebuilding innerHTML up to now
+          // easier: append progressively
+          // remove previously appended typed piece for this text part by using a span
+          if (!el.lastChild || el.lastChild.nodeName !== 'SPAN' || !el.lastChild.classList.contains('tw')) {
+            const span = document.createElement('span');
+            span.className = 'tw';
+            el.appendChild(span);
+          }
+          el.lastChild.textContent = typed;
+          msgsEl.scrollTop = msgsEl.scrollHeight;
+          cIndex++;
+          setTimeout(step, speed);
+        } else {
+          // finish this text part: keep as plain text node (replace span with text)
+          const span = el.lastChild;
+          if (span && span.classList && span.classList.contains('tw')) {
+            const txt = document.createTextNode(span.textContent);
+            el.replaceChild(txt, span);
+          }
+          pIndex++;
+          cIndex = 0;
+          setTimeout(step, speed);
+        }
+      }
+    }
+    step();
+  }
+
+  // Append message bubble
   function appendMessage(sender, text, typewriter = false) {
     const wrapper = document.createElement('div');
     wrapper.className = `message ${sender}`;
@@ -74,12 +121,15 @@ document.addEventListener('DOMContentLoaded', () => {
     msgsEl.appendChild(wrapper);
     msgsEl.scrollTop = msgsEl.scrollHeight;
 
-    if (typewriter) {
-      bubble.innerHTML = renderWithLinksAndBreaks(text);
+    if (sender === 'bot' && typewriter) {
+      const safeHTML = renderWithLinksAndBreaks(text);
+      // start blank and type it out
+      bubble.innerHTML = '';
+      typeHTML(safeHTML, bubble, 15);
       return;
     }
 
-    // plain text path (user messages etc.)
-    bubble.textContent = text; // preserves \n; CSS shows them
+    // user or non-typewriter bot
+    bubble.textContent = text; // preserves \n for user; CSS handles it
   }
 });
