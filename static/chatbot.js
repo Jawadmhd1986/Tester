@@ -41,14 +41,30 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       const data = await res.json();
       const reply = data.reply ?? 'Sorry, something went wrong.';
-      // show reply; we keep \n and let CSS (white-space: pre-line) render them
+      // show reply with links + line breaks
       appendMessage('bot', reply, true);
     } catch {
       appendMessage('bot', 'Sorry, something went wrong.');
     }
   }
 
-  // typewriter = true uses a safe textContent typewriter (preserves \n)
+  // --- sanitizer: escape all HTML, then allow only <a ...>...</a>, and convert \n to <br> ---
+  function renderWithLinksAndBreaks(text) {
+    // 1) escape
+    let out = String(text)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+    // 2) allow anchor tags back
+    out = out
+      .replace(/&lt;a\b([\s\S]*?)&gt;/gi, '<a$1>')
+      .replace(/&lt;\/a&gt;/gi, '</a>');
+    // 3) turn newlines into <br>
+    out = out.replace(/\n/g, '<br>');
+    return out;
+  }
+
+  // typewriter=true now means: render safely with links + <br> (no visual typing)
   function appendMessage(sender, text, typewriter = false) {
     const wrapper = document.createElement('div');
     wrapper.className = `message ${sender}`;
@@ -58,20 +74,12 @@ document.addEventListener('DOMContentLoaded', () => {
     msgsEl.appendChild(wrapper);
     msgsEl.scrollTop = msgsEl.scrollHeight;
 
-    if (!typewriter) {
-      bubble.textContent = text; // ✅ preserve \n
+    if (typewriter) {
+      bubble.innerHTML = renderWithLinksAndBreaks(text);
       return;
     }
 
-    // Safe typewriter with \n preservation
-    let i = 0;
-    (function typeChar() {
-      if (i <= text.length) {
-        bubble.textContent = text.slice(0, i); // ✅ preserve \n
-        msgsEl.scrollTop = msgsEl.scrollHeight;
-        i++;
-        setTimeout(typeChar, 15);
-      }
-    })();
+    // plain text path (user messages etc.)
+    bubble.textContent = text; // preserves \n; CSS shows them
   }
 });
