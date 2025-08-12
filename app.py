@@ -1394,8 +1394,8 @@ def _short_contrast(pls):
     re.search(r"\b(vs|versus|difference|different|compare|comparison|diff)\b", message)
         and len(_extract_pl_mentions(message)) >= 2
 ):
-    asked = _extract_pl_mentions(message)
-    lines = ["**Comparison — " + " vs ".join(asked) + "**\n"]
+        asked = _extract_pl_mentions(message)
+        lines = ["**Comparison — " + " vs ".join(asked) + "**\n"]
         for code in asked:
         d = _PL_DEF.get(code)
             if not d:
