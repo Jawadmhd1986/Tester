@@ -1391,20 +1391,20 @@ def _short_contrast(pls):
 
 # Trigger only when user is comparing PLs AND mentions at least two
     if (
-    re.search(r"\b(vs|versus|difference|different|compare|comparison|diff)\b", message)
+        re.search(r"\b(vs|versus|difference|different|compare|comparison|diff)\b", message)
         and len(_extract_pl_mentions(message)) >= 2
 ):
         asked = _extract_pl_mentions(message)
         lines = ["**Comparison — " + " vs ".join(asked) + "**\n"]
         for code in asked:
-        d = _PL_DEF.get(code)
+            d = _PL_DEF.get(code)
             if not d:
                 continue
-        lines.append(f"🔹 **{d['title']}**")
+            lines.append(f"🔹 **{d['title']}**")
             for b in d["bullets"]:
-            lines.append(f"- {b}")
-        lines.append("")  # blank line
-    lines.append(f"**In short:** {_short_contrast(asked)}.")
+                lines.append(f"- {b}")
+            lines.append("")  # blank line
+        lines.append(f"**In short:** {_short_contrast(asked)}.")
         return jsonify({"reply": "\n".join(lines)})
 
     # --- Service definitions ---
