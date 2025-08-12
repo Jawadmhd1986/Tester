@@ -693,6 +693,15 @@ def chat():
             "4️⃣ Reporting/system integration needs\n"
             "5️⃣ Any relocation, retrieval, or disposal cycles"
         })
+    if match([r"^rfid$", r"what is rfid", r"rfid meaning", r"rfid technology"]):
+        return jsonify({"reply":
+        "**RFID** stands for *Radio Frequency Identification*. It’s a technology that uses radio waves to automatically identify and track tags attached to objects.\n\n"
+        "At **DSV Abu Dhabi**, RFID is used for:\n"
+        "- Asset tracking and management\n"
+        "- Warehouse inventory visibility\n"
+        "- Automated gate control and access logging\n\n"
+        "RFID tags can be passive (no battery) or active (battery-powered) and can be scanned without direct line of sight."
+    })
 
     if match([r"asset management", r"what is asset management", r"tracking of assets", r"rfid.*asset"]):
         return jsonify({"reply":
@@ -729,7 +738,7 @@ def chat():
         })
 
     if match([
-        r"pallet positions", r"how many.*pallet.*position", r"pallet slots",
+        r"pallet positions", r"pallet position", r"how many.*pallet.*position", r"pallet slots",
         r"positions per bay", r"rack.*pallet.*position", r"warehouse pallet capacity"
     ]):
         return jsonify({"reply":
@@ -798,7 +807,10 @@ def chat():
 
     if match([r"chambers.*21k", r"how many.*chambers", r"warehouse.*layout", r"wh.*layout", r"warehouse.*structure", r"\bchambers\b"]):
         return jsonify({"reply": "There are 7 chambers in the 21K warehouse with different sizes and rack types. Chambers range from 1,000–5,000 sqm and together can accommodate ~35,000 CBM."})
-
+    if match([r"packing material", r"what packing material", r"materials used for packing"]):
+            return jsonify({"reply":
+            "DSV uses high-grade packing materials:\n- Shrink wrap (6 rolls per box, 1 roll = 20 pallets)\n- Strapping rolls + buckle kits (1 roll = 20 pallets)\n- Bubble wrap, carton boxes, foam sheets\n- Heavy-duty pallets (wooden/plastic)\nUsed for relocation, storage, and export."
+        })
     if match([
         r"warehouse activities", r"inbound process", r"outbound process", r"wh process",
         r"warehouse process", r"SOP", r"operation process", r"putaway", r"replenishment",
@@ -999,10 +1011,16 @@ def chat():
             "Yes, DSV supports **cross-docking** for fast-moving cargo:\n- Receive → Sort → Dispatch (no storage)\n- Ideal for FMCG, e-commerce, and retail\n- Reduces lead time and handling\n- Available at Mussafah and KIZAD hubs"
         })
 
-    if match([r"transit store", r"transit warehouse", r"transit storage", r"temporary storage", r"short term storage"]):
+    if match([
+    r"transit\b", r"transit store", r"transit warehouse", r"transit storage", 
+    r"temporary storage", r"short term storage"]):
         return jsonify({"reply":
-            "DSV offers **transit storage** for short-term cargo holding. Ideal for:\n- Customs-cleared goods awaiting dispatch\n- Re-export shipments\n- Short-duration contracts\nOptions available in Mussafah, Airport Freezone, and KIZAD."
-        })
+        "DSV offers **transit storage** for short-term cargo holding. Ideal for:\n"
+        "- Customs-cleared goods awaiting dispatch\n"
+        "- Re-export shipments\n"
+        "- Short-duration contracts\n"
+        "Options available in Mussafah, Airport Freezone, and KIZAD."
+    })
 
     # --- EV trucks ---
     if match([r"ev truck|electric vehicle|zero emission|sustainable transport"]):
@@ -1150,11 +1168,6 @@ We manage everything from port-to-door, ensuring safety, compliance, and cost ef
             "DSV provides **kitting and assembly** as a Value Added Service:\n- Combine multiple SKUs into kits\n- Light assembly of components\n- Repacking and labeling\n- Ideal for retail, pharma, and project logistics"
         })
 
-    if match([r"packing material", r"what packing material", r"materials used for packing"]):
-        return jsonify({"reply":
-            "DSV uses high-grade packing materials:\n- Shrink wrap (6 rolls per box, 1 roll = 20 pallets)\n- Strapping rolls + buckle kits (1 roll = 20 pallets)\n- Bubble wrap, carton boxes, foam sheets\n- Heavy-duty pallets (wooden/plastic)\nUsed for relocation, storage, and export."
-        })
-
     if match([r"\brelocation\b", r"move warehouse", r"shift cargo", r"site relocation"]):
         return jsonify({"reply":
             "Yes, DSV provides full **relocation services**:\n- Machinery shifting\n- Office and warehouse relocations\n- Packing, transport, offloading\n- Insurance and dismantling available\nHandled by our trained team with all safety measures."
@@ -1192,9 +1205,6 @@ We manage everything from port-to-door, ensuring safety, compliance, and cost ef
 
     if match([r"warehouse activities|warehouse tasks|daily warehouse work"]):
         return jsonify({"reply": "DSV warehouse activities include receiving (inbound), put-away, storage, replenishment, order picking, packing, staging, and outbound dispatch. We also handle inventory audits, cycle counts, and VAS."})
-
-    if match([r"warehouse process|inbound|outbound|putaway|replenishment|dispatch"]):
-        return jsonify({"reply": "Typical warehouse processes at DSV: (1) Inbound receiving, (2) Put-away into racks or zones, (3) Order picking or replenishment, (4) Packing & labeling, (5) Outbound dispatch. All steps are WMS-tracked."})
 
     if match([r"\bsop\b", r"standard operating procedure", r"standard operation process"]):
         return jsonify({"reply":
