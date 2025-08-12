@@ -1292,108 +1292,84 @@ We manage everything from port-to-door, ensuring safety, compliance, and cost ef
         return jsonify({"reply": "To get a full quotation, please close this chat and fill the details in the main form on the left. The system will generate a downloadable document for you."})
 
     # ===== Compare only requested PLs (1PL/2PL/3PL/3.5PL/4PL/5PL/6PL) =====
-def _extract_pl_mentions(msg: str):
-    """Return a list of (code, pos) in the order they appear in the normalized message."""
-    aliases = {
-        "1PL": [r"\b1pl\b", r"\bfirst party logistics\b"],
-        "2PL": [r"\b2pl\b", r"\bsecond party logistics\b"],
-        "3PL": [r"\b3pl\b", r"\bthird party logistics\b"],
-        "3.5PL": [r"\b3\.?5pl\b", r"\bthree and half pl\b", r"\b3pl plus\b", r"\bmiddle of 3pl and 4pl\b"],
-        "4PL": [r"\b4pl\b", r"\bfourth party logistics\b"],
-        "5PL": [r"\b5pl\b", r"\bfifth party logistics\b"],
-        "6PL": [r"\b6pl\b", r"\bsixth party logistics\b"],
-    }
-    found = []
-    for code, pats in aliases.items():
-        pos = None
-        for p in pats:
-            m = re.search(p, msg)
-            if m:
-                pos = m.start() if pos is None else min(pos, m.start())
-        if pos is not None:
-            found.append((code, pos))
-    # sort by first appearance in the message, preserve user order
-    found.sort(key=lambda x: x[1])
-    # dedupe by code
-    ordered_codes = []
-    for code, _ in found:
-        if code not in ordered_codes:
-            ordered_codes.append(code)
-    return ordered_codes
+    # ===== Compare only requested PLs (1PL/2PL/3PL/3.5PL/4PL/5PL/6PL) =====
+    def _extract_pl_mentions(msg: str):
+        aliases = {
+            "1PL": [r"\b1pl\b", r"\bfirst party logistics\b"],
+            "2PL": [r"\b2pl\b", r"\bsecond party logistics\b"],
+            "3PL": [r"\b3pl\b", r"\bthird party logistics\b"],
+            "3.5PL": [r"\b3\.?5pl\b", r"\bthree and half pl\b", r"\b3pl plus\b", r"\bmiddle of 3pl and 4pl\b"],
+            "4PL": [r"\b4pl\b", r"\bfourth party logistics\b"],
+            "5PL": [r"\b5pl\b", r"\bfifth party logistics\b"],
+            "6PL": [r"\b6pl\b", r"\bsixth party logistics\b"],
+        }
+        found = []
+        for code, pats in aliases.items():
+            pos = None
+            for p in pats:
+                m = re.search(p, msg)
+                if m:
+                    pos = m.start() if pos is None else min(pos, m.start())
+            if pos is not None:
+                found.append((code, pos))
+        found.sort(key=lambda x: x[1])
+        ordered = []
+        for code, _ in found:
+            if code not in ordered:
+                ordered.append(code)
+        return ordered
 
-_PL_DEF = {
-    "1PL": {
-        "title": "1PL — First-Party Logistics",
-        "bullets": [
+    _PL_DEF = {
+        "1PL": {"title": "1PL — First-Party Logistics", "bullets": [
             "Owner of goods does everything in-house (warehouse, trucks, staff, systems).",
             "Max control, but higher CAPEX/OPEX and expertise needed."
-        ]
-    },
-    "2PL": {
-        "title": "2PL — Second-Party Logistics",
-        "bullets": [
+        ]},
+        "2PL": {"title": "2PL — Second-Party Logistics", "bullets": [
             "Asset/capacity provider (trucks, space, vessels). Client still runs operations.",
             "You rent capacity; processes and planning stay with you."
-        ]
-    },
-    "3PL": {
-        "title": "3PL — Third-Party Logistics",
-        "bullets": [
+        ]},
+        "3PL": {"title": "3PL — Third-Party Logistics", "bullets": [
             "Outsourced execution: warehousing, transport, order fulfillment, VAS.",
             "Provider runs ops under your strategy/KPIs; WMS/TMS operated by provider."
-        ]
-    },
-    "3.5PL": {
-        "title": "3.5PL — Hybrid (between 3PL & 4PL)",
-        "bullets": [
+        ]},
+        "3.5PL": {"title": "3.5PL — Hybrid (between 3PL & 4PL)", "bullets": [
             "Provider handles operations + some planning/analytics/CI.",
             "More orchestration than 3PL, not a full lead-logistics role."
-        ]
-    },
-    "4PL": {
-        "title": "4PL — Fourth-Party Logistics",
-        "bullets": [
+        ]},
+        "4PL": {"title": "4PL — Fourth-Party Logistics", "bullets": [
             "Lead logistics integrator managing multiple 3PLs/carriers, network design, and strategy.",
             "Single point of contact; end-to-end governance and optimization."
-        ]
-    },
-    "5PL": {
-        "title": "5PL — Fifth-Party Logistics",
-        "bullets": [
+        ]},
+        "5PL": {"title": "5PL — Fifth-Party Logistics", "bullets": [
             "Orchestrates networks-of-networks via platforms; heavy data & automation.",
             "Outcome-based management across several 3PL/4PL providers."
-        ]
-    },
-    "6PL": {
-        "title": "6PL — Sixth-Party Logistics (emerging)",
-        "bullets": [
+        ]},
+        "6PL": {"title": "6PL — Sixth-Party Logistics (emerging)", "bullets": [
             "AI-driven/autonomous orchestration (digital twins, predictive planning, autonomous assets).",
             "Vision/early adoption rather than a widely standardised operating model."
-        ]
-    },
-}
+        ]},
+    }
 
-def _short_contrast(pls):
-    """One-line contrast for just the requested models."""
-    order = ["1PL","2PL","3PL","3.5PL","4PL","5PL","6PL"]
-    rank = {k:i for i,k in enumerate(order)}
-    pls_sorted = sorted(pls, key=lambda k: rank.get(k, 99))
-    parts = []
-    for k in pls_sorted:
-        if k == "1PL": parts.append("client in-house")
-        elif k == "2PL": parts.append("provider assets only")
-        elif k == "3PL": parts.append("provider runs execution")
-        elif k == "3.5PL": parts.append("exec + some strategy")
-        elif k == "4PL": parts.append("lead-logistics orchestration")
-        elif k == "5PL": parts.append("platform multi-network")
-        elif k == "6PL": parts.append("autonomous/AI orchestration")
-    return " → ".join(parts)
+    def _short_contrast(pls):
+        order = ["1PL","2PL","3PL","3.5PL","4PL","5PL","6PL"]
+        rank = {k:i for i,k in enumerate(order)}
+        pls_sorted = sorted(pls, key=lambda k: rank.get(k, 99))
+        parts = []
+        for k in pls_sorted:
+            if k == "1PL": parts.append("client in-house")
+            elif k == "2PL": parts.append("provider assets only")
+            elif k == "3PL": parts.append("provider runs execution")
+            elif k == "3.5PL": parts.append("exec + some strategy")
+            elif k == "4PL": parts.append("lead-logistics orchestration")
+            elif k == "5PL": parts.append("platform multi-network")
+            elif k == "6PL": parts.append("autonomous/AI orchestration")
+        return " → ".join(parts)
 
-# Trigger only when user is comparing PLs AND mentions at least two
+    # Compare ONLY requested PLs
     if (
         re.search(r"\b(vs|versus|difference|different|compare|comparison|diff)\b", message)
         and len(_extract_pl_mentions(message)) >= 2
-):
+    ):
         asked = _extract_pl_mentions(message)
         lines = ["**Comparison — " + " vs ".join(asked) + "**\n"]
         for code in asked:
@@ -1403,7 +1379,7 @@ def _short_contrast(pls):
             lines.append(f"🔹 **{d['title']}**")
             for b in d["bullets"]:
                 lines.append(f"- {b}")
-            lines.append("")  # blank line
+            lines.append("")
         lines.append(f"**In short:** {_short_contrast(asked)}.")
         return jsonify({"reply": "\n".join(lines)})
 
