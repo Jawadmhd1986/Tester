@@ -462,7 +462,7 @@ def chat():
         return jsonify({"reply": "Open Shed storage is 1.8 AED/CBM/day. Standard VAS applies."})
 
     # --- Chemical Storage Follow-ups ---
-    if match([r"^chemical$", r"^chemicals$", r"chemicals storage only, r"chemical storage only"]):
+    if match([r"^chemical$", r"^chemicals$", r"chemicals storage only", r"chemical storage only"]):
         return jsonify({"reply": "Do you mean Chemical AC or Chemical Non-AC?"})
 
     if match([r"chemical ac", r"ac chemical", r"chemical ac storage", r"chemical ac storage rate", r"^chemical ac$"]):
